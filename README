@@ -1,0 +1,11 @@
+############################################
+############bxdat
+############v0.1
+############30 January 2018
+############################################
+
+Trying to get a substantial amount of box score data 
+to run GLM/NN predictive models.
+
+First step:  get some basic data.
+next: input list of games/teams, get data.. plus W/L data!
