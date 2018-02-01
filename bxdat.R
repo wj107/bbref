@@ -1,7 +1,7 @@
-########################################################
+#######################################################
 ########################################################
 ################scrape box score data
-################v0.1
+################v0.11
 ################30 January 2018
 ########################################################
 #######get some box score data -- need it for GLM/NN!!
@@ -15,7 +15,7 @@ require(rvest)
 p<-"https://www.basketball-reference.com/boxscores/"
 
 ######for starters...
-games<-c("201410280LAL.html","201410290PHO.html","201410310LAL.html","201411010GSW.html","201411040LAL.html")
+games<-c("201410280LAL.html","201410290PHO.html","201410310LAL.html","201411010GSW.html","201411040LAL.html","201411090LAL.html")
 
 ###initial output data frame
 bxdat<-NULL
@@ -32,6 +32,15 @@ for (i in games){
 	####clean it up!!
 		bx[1,]->names(bx)
 		bx<-bx[-1,]
+	####define W/L by summing plus.minus
+		bx[,ncol(bx)]->pm
+	##convert to numeric
+		pm<-as.numeric(pm)
+	##remove NA's
+		pm<-pm[!is.na(pm)]
+	##SUM: positive = 1, negative = 0
+		bx[nrow(bx),ncol(bx)]<-0
+		if(sum(pm)>0) bx[nrow(bx),ncol(bx)]<-1
 	####append team totals to bxdat
 		bxdat[[i]]<-bx[nrow(bx),]
 	}
