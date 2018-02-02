@@ -57,14 +57,26 @@ bx.season<-function(
 	reg.season.dates<-format(reg.season.dates,format="%Y%m%d")
 #####redefine 'opponent' column as 'home team'
 	###replace opp in games w/out "@" as full home team name
-	reg.season[reg.season[,6]=="",7]<-team.full
-	
-	reg.season[,7]}
+	which(reg.season[,6]=="")->H
+	team.full->reg.season[H,7]
 	###replace all full teams with abbreviations
-	#home.team<-teams$abbr[match(reg.season[,7],teams$full)]
+	home.team<-teams$abbr[match(reg.season[,7],teams$full)]
 
 ######combine:  dates + teams for box score links
-#bx.pages<-paste0(reg.season.dates,"0",home.team,".html")
-#bx.pages
-#}
+	bx.pages<-paste0(reg.season.dates,"0",home.team,".html")
+
+#####get rid of NAs... until we can clean up teams, etc
+	bx.pages<-bx.pages[-grep("NA.html",bx.pages)]
+
+######get data for all the pages!!
+	####initialize
+	###make sure script to get data is loaded
+		source("bxdat.R")
+		output<-vector("list")
+	###loop through bx.pages, get data
+		for (i in 1:length(bx.pages)) bxdat(bx.pages[i],team)->output[[i]]
+#####output!!!
+	output
+
+}
 
