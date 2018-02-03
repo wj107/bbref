@@ -27,7 +27,7 @@ bxdat<-function(
 	#if(team==NULL) stop("Argument 'team' requires a team abbreviation")
 
 ###initialize output
-	bxdat<-NULL
+	#bxdat<-NULL
 #####read webpage with boxscores
 	bx.page<-read_html(file.path(link.root,link))
 #####identify tables in webpage
@@ -38,19 +38,27 @@ bxdat<-function(
 	bx<-table.nodes[grep(table.to.get,table.nodes)]
 ####convert html table to data frame
 	bx<-as.data.frame(html_table(bx))
-####clean it up!!
+####clean up names and non-numeric rows
 	bx[1,]->names(bx)
-	bx<-bx[-1,]
-####define W/L by summing plus.minus
-	bx[,ncol(bx)]->pm
-##convert to numeric
-	pm<-as.numeric(pm)
-##remove NA's
-	pm<-pm[!is.na(pm)]
-##SUM: positive = 1, negative = 0
-	bx[nrow(bx),ncol(bx)]<-0
-	if(sum(pm)>0) bx[nrow(bx),ncol(bx)]<-1
-####output team totals to bxdat
-	bx[nrow(bx),]
-	}
+	bx<-bx[-c(1,7),]
+####clean up DNPs
+	###find DNPs (etc)
+		dnp<-sapply(1:nrow(bx), function(x) all(is.na(as.numeric(bx[x,]))) )
+	####eliminate dnp's
+		bx<-bx[!dnp,]
+	####find dim's
+		M<-nrow(bx)
+		N<-ncol(bx)
+####sum +/- for team total
+	bx[M,N]<-sum(as.numeric(bx[,N][-M]))
 
+#####output team totals, replace +/- w. "WL"
+	###total team data
+		team.total<-as.numeric(bx[M,-1])
+	##set +/- to 0 or 1, rename
+		if(team.total[N-1]>0) team.total[N-1]<-1
+			else team.total[N-1]<-0
+		names(bx)[N]<-"WL"
+		names(bx)[-1]->names(team.total)
+		team.total
+	}
