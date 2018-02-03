@@ -34,37 +34,40 @@ bx.season<-function(
 ####path for box scores
 	link.root<-"https://www.basketball-reference.com/"
 
-#####specific path for desired season
-	link.season<-file.path(link.root,"teams",team,paste0(season,"_games.html"))
-	
-#####read page w.schedule
-	season.schedule<-read_html(link.season)
+####initialize webpages for games
+bx.pages<-NULL
 
-#####find tables in webpage
-	season.schedule<-html_nodes(season.schedule,"table")
-#####find --regular season-- games in webpage
-	reg.season<-season.schedule[grep("\"games\"",season.schedule)]
-	###someday!!
-	###playoffs<-season.schedule[grep("\"games_playoffs\"",season.schedule)]
+#####loop across seasons
+for (i in season){
+	#####specific path for current season
+		link.season<-file.path(link.root,"teams",team,paste0(i,"_games.html"))
+	#####read page w.schedule
+		season.schedule<-read_html(link.season)
+	#####find tables in webpage
+		season.schedule<-html_nodes(season.schedule,"table")
+	#####find --regular season-- games in webpage
+		reg.season<-season.schedule[grep("\"games\"",season.schedule)]
+		###someday!!
+		###playoffs<-season.schedule[grep("\"games_playoffs\"",season.schedule)]
 
-#####'import' as data frame
-	reg.season<-as.data.frame(html_table(reg.season))
-####erase label rows
-	reg.season<-reg.season[!is.na(as.numeric(reg.season[,1])),]
-#####extract and format dates
-	reg.season[,2]->reg.season.dates
-	reg.season.dates<-strptime(reg.season.dates,"%a, %b %d, %Y")
-	reg.season.dates<-format(reg.season.dates,format="%Y%m%d")
-#####redefine 'opponent' column as 'home team'
-	###replace opp in games w/out "@" as full home team name
-	which(reg.season[,6]=="")->H
-	team.full->reg.season[H,7]
-	###replace all full teams with abbreviations
-	home.team<-teams$abbr[match(reg.season[,7],teams$full)]
+	#####'import' as data frame
+		reg.season<-as.data.frame(html_table(reg.season))
+	####erase label rows
+		reg.season<-reg.season[!is.na(as.numeric(reg.season[,1])),]
+	#####extract and format dates
+		reg.season[,2]->reg.season.dates
+		reg.season.dates<-strptime(reg.season.dates,"%a, %b %d, %Y")
+		reg.season.dates<-format(reg.season.dates,format="%Y%m%d")
+	#####redefine 'opponent' column as 'home team'
+		###replace opp in games w/out "@" as full home team name
+		which(reg.season[,6]=="")->H
+		team.full->reg.season[H,7]
+		###replace all full teams with abbreviations
+		home.team<-teams$abbr[match(reg.season[,7],teams$full)]
 
-######combine:  dates + teams for box score links
-	bx.pages<-paste0(reg.season.dates,"0",home.team,".html")
-	
+	######combine:  dates + teams for box score links
+		bx.pages<-c(bx.pages,paste0(reg.season.dates,"0",home.team,".html"))
+	}
 #####get rid of NAs... IF there's NAs
 	if(length(grep("NA.html",bx.pages))>0) 
 		bx.pages<-bx.pages[-grep("NA.html",bx.pages)]
@@ -79,6 +82,9 @@ bx.season<-function(
 
 ######clean up data into data frame
 	names(output[[1]])->stats
+	###replace %,3 symbols
+		stats<-sub("%","p",stats)
+		stats<-sub("3","t",stats)
 	length(stats)->N
 	output<-matrix(unlist(output),ncol=N,byrow=T)
 	output<-data.frame(output)

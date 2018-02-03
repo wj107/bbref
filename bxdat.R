@@ -16,7 +16,10 @@ bxdat<-function(
 	##################bx score link
 		link=NULL,
 	##################team to get data from
-		team=NULL
+		team=NULL,
+	####should I give the season with the data??
+		#####v0.2, you know??
+		year=FALSE	
 		)
 	{
 
@@ -25,6 +28,7 @@ bxdat<-function(
 #######check argument
 	#if(link==NULL) stop("Argument 'link' requires a valid path")
 	#if(team==NULL) stop("Argument 'team' requires a team abbreviation")
+	if(!is.logical(year)) stop("Argument: `year' must be logical")
 
 ###initialize output
 	#bxdat<-NULL
