@@ -13,8 +13,10 @@
 bbteam<-function(
 		###########team to get data from
 			team="LAL",
-		###########season to get data from
-			season=2010
+		###########season(s) to get data from
+			season=2010,
+		###########include opponents stats, too?
+			opp=F
 		)
 	{
 ########check arguments
@@ -22,75 +24,81 @@ bbteam<-function(
 	#if(!(team %in% teams$abbr)) stop("Argument 'team' must be a valid abbreviation for an NBA team")
 ###is season valid?
 	#if(!(season %in% 2000:2018)) stop("Argument 'season' must be between 2000 and 2018")
+###is opp logical
+	if(!is.logical(opp)) stop("Argument 'opp' must be logical")
+
+###do I need 'teams' anymore, at all??
 
 ####full team
-	team.full<-teams$full[match(team,teams$abbr)]
+##	team.full<-teams$full[match(team,teams$abbr)]
 
 ##################################################
 ####obtain & clean schedule for the given season
 ##################################################
 
 ####path for box scores
-	link.root<-"https://www.basketball-reference.com/"
+	link.root<-"https://www.basketball-reference.com/teams"
 
-####initialize webpages for games
-bx.pages<-NULL
+####initialize output
+output<-NULL
 
 #####loop across seasons
 for (i in season){
+	#############download gamelog data###############
+	
 	#####specific path for current season
-		link.season<-file.path(link.root,"teams",team,paste0(i,"_games.html"))
-	#####read page w.schedule
-		season.schedule<-read_html(link.season)
+		gamelog<-file.path(link.root,team,i,"gamelog")
+	#####read page w.gamelog
+		gamelog<-read_html(gamelog)
 	#####find tables in webpage
-		season.schedule<-html_nodes(season.schedule,"table")
-	#####find --regular season-- games in webpage
-		reg.season<-season.schedule[grep("\"games\"",season.schedule)]
-		###someday!!
-		###playoffs<-season.schedule[grep("\"games_playoffs\"",season.schedule)]
-
+		gamelog.table<-html_nodes(gamelog,"table")
 	#####'import' as data frame
-		reg.season<-as.data.frame(html_table(reg.season))
-	####erase label rows
-		reg.season<-reg.season[!is.na(as.numeric(reg.season[,1])),]
-	#####extract and format dates
-		reg.season[,2]->reg.season.dates
-		reg.season.dates<-strptime(reg.season.dates,"%a, %b %d, %Y")
-		reg.season.dates<-format(reg.season.dates,format="%Y%m%d")
-	#####redefine 'opponent' column as 'home team'
-		###replace opp in games w/out "@" as full home team name
-		which(reg.season[,6]=="")->H
-		team.full->reg.season[H,7]
-		###replace all full teams with abbreviations
-		home.team<-teams$abbr[match(reg.season[,7],teams$full)]
+		gamelog<-as.data.frame(html_table(gamelog.table), row.names=NULL)
+	
+	############clean gamelog data##################
+	
+	####fix names, delete redundancy
+		names(gamelog)<-gamelog[1,]
+		gamelog<-gamelog[-1,]
+		gamelog<-gamelog[,-c(1,25)]
+	####remove label rows
+		gamelog<-gamelog[!is.na(as.numeric(gamelog[,1])),]
+	####coerce stats to numeric
+		gamelog<-cbind(gamelog[,1:5],data.frame(lapply(gamelog[,6:39],as.numeric)))
+	####fix names
+		names(gamelog)<-gsub("\\.","p",names(gamelog))
+		names(gamelog)<-gsub("X3","t",names(gamelog))
+	#####separate opponent's stats
+		opp.gamelog<-gamelog[,24:39]
+		gamelog<-gamelog[,1:23]
+	
+	##############format gamelog##########################
+		
+	####create home/away column
+		gamelog[,3][gamelog[,3]=="@"]<-"A"
+		gamelog[,3][gamelog[,3]==""]<-"H"
+	####fix some names
+		names(gamelog)[c(3,5:7)]<-c("HA","WL","PTS","oPTS")
+	####format factors
+		###future: order factors!!
+		for (i in c(3,5)) gamelog[,i]<-as.factor(gamelog[,i])
 
-	######combine:  dates + teams for box score links
-		bx.pages<-c(bx.pages,paste0(reg.season.dates,"0",home.team,".html"))
+	###############if opp, prepare opponent's data##################
+	if(opp) {
+		###designate opponent's stats
+			names(opp.gamelog)<-paste0("o",gsub("p1","",names(opp.gamelog)))
+		###cbind with gamelog data
+			gamelog<-cbind(gamelog,opp.gamelog)
+		}
+				
+####rbind season data to output
+	output<-rbind(output,gamelog)
+	
+	###finish 'season' loop
 	}
-#####get rid of NAs... IF there's NAs
-	if(length(grep("NA.html",bx.pages))>0) 
-		bx.pages<-bx.pages[-grep("NA.html",bx.pages)]
 
-######get data for all the pages!!
-	####initialize
-	###make sure script to get data is loaded
-		source("bxdat.R")
-		output<-vector("list")
-	###loop through bx.pages, get data
-		for (i in 1:length(bx.pages)) bxdat(bx.pages[i],team)->output[[i]]
-
-######clean up data into data frame
-	names(output[[1]])->stats
-	###replace %,3 symbols
-		stats<-sub("%","p",stats)
-		stats<-sub("3","t",stats)
-	length(stats)->N
-	output<-matrix(unlist(output),ncol=N,byrow=T)
-	output<-data.frame(output)
-	names(output)<-stats
 
 #####output!!!
 	output
-
 }
 
