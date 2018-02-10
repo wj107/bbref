@@ -2,50 +2,56 @@
 #######Scrape basketball-reference.com for team gamelogs for a given season(s) 
 ##########################################################################################
 
+#-----------------------------
+#---requirements
+#-----------------------------
 
-###Package for scraping tables
-	require(rvest)
-###Load variable of team abbreviations and names (later.... seasons, too!!!)
-	load("teams.RData")
+	###Package for scraping tables
+		require(rvest)
 
+#-----------------------------
+#---function call
+#-----------------------------
 
-######create a function to get a team's bxdata for a whole season
-bbteam<-function(
-		###########team to get data from
+	bbteam<-function(
+		#####team to get data from
 			team="LAL",
-		###########season(s) to get data from
+		#####season(s) to get data from
 			season=2010,
-		###########include opponents stats, too?
-			opp=F
+		###include opponents stats, too?
+			opp=F,
+		###include ID on data with team/season
+			id=T
 		)
 	{
-########check arguments
-###is team valid?
-	#if(!(team %in% teams$abbr)) stop("Argument 'team' must be a valid abbreviation for an NBA team")
-###is season valid?
-	#if(!(season %in% 2000:2018)) stop("Argument 'season' must be between 2000 and 2018")
-###is opp logical
-	if(!is.logical(opp)) stop("Argument 'opp' must be logical")
 
-###do I need 'teams' anymore, at all??
+#-----------------------------
+#---check arguments
+#-----------------------------
 
-####full team
-##	team.full<-teams$full[match(team,teams$abbr)]
+	##[[[ENSEGUIDO!!]]  check arguments!!
+	###is team valid?
+	###is season valid?
 
-##################################################
-####obtain & clean schedule for the given season
-##################################################
+	###is opp, id logical
+		if(!is.logical(opp)) stop("Argument 'opp' must be logical")
+		if(!is.logical(id)) stop("Argument 'id' must be logical")
 
-####path for box scores
-	link.root<-"https://www.basketball-reference.com/teams"
+#-----------------------------------------------------
+#-----obtain & clean schedule for the given season
+#-----------------------------------------------------
 
-####initialize output
-output<-NULL
+	#-------initialize-------
+	####path for box scores
+		link.root<-"https://www.basketball-reference.com/teams"
+	####initialize output
+		output<-NULL
 
-#####loop across seasons
+#-----------loop across seasons--------------------------
 for (i in season){
-	#############download gamelog data###############
 	
+	#-----download gamelog data------
+
 	#####specific path for current season
 		gamelog<-file.path(link.root,team,i,"gamelog")
 	#####read page w.gamelog
@@ -55,9 +61,9 @@ for (i in season){
 	#####'import' as data frame
 		gamelog<-as.data.frame(html_table(gamelog.table), row.names=NULL)
 	
-	############clean gamelog data##################
+	#------clean gamelog data------
 	
-	####fix names, delete redundancy
+	####fix names, delete redundancy, NA's
 		names(gamelog)<-gamelog[1,]
 		gamelog<-gamelog[-1,]
 		gamelog<-gamelog[,-c(1,25)]
@@ -68,12 +74,9 @@ for (i in season){
 	####fix names
 		names(gamelog)<-gsub("\\.","p",names(gamelog))
 		names(gamelog)<-gsub("X3","t",names(gamelog))
-	#####separate opponent's stats
-		opp.gamelog<-gamelog[,24:39]
-		gamelog<-gamelog[,1:23]
 	
-	##############format gamelog##########################
-		
+	#-----format gamelog--------
+
 	####create home/away column
 		gamelog[,3][gamelog[,3]=="@"]<-"A"
 		gamelog[,3][gamelog[,3]==""]<-"H"
@@ -83,22 +86,16 @@ for (i in season){
 		###future: order factors!!
 		for (i in c(3,5)) gamelog[,i]<-as.factor(gamelog[,i])
 
-	###############if opp, prepare opponent's data##################
-	if(opp) {
-		###designate opponent's stats
-			names(opp.gamelog)<-paste0("o",gsub("p1","",names(opp.gamelog)))
-		###cbind with gamelog data
-			gamelog<-cbind(gamelog,opp.gamelog)
-		}
+	#------if opp, designate opponent's data-----
+	if(opp) names(gamelog)[24:39]<-paste0("o",gsub("p1","",names(gamelog)[24:39]))
+		###else cut out opponent's data
+			else gamelog<-gamelog[,1:23]
 				
-####rbind season data to output
+	#----rbind season data to output, finish 'season' loop
 	output<-rbind(output,gamelog)
-	
-	###finish 'season' loop
 	}
 
-
-#####output!!!
-	output
+#----output and we're done!
+output
 }
 

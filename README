@@ -1,6 +1,6 @@
 #####################################################################
 ############# BASKETBALL REFERENCE DATA SCRAPING TOOLS
-############# v0.11 -- 10 February 2018
+############# v0.11+ -- 11 February 2018
 #####################################################################
 #-------- Author: wj107
 #-------- Email: will.johnson@gmail.com
@@ -14,10 +14,11 @@
 #---------------v0.11 has:
 #-----------function "bbplayer", input player name, season(s), logical switch if data will be tagged with player name/season
 #-----------function "bbteam", input team abbreviation, season(s), logical switch to include opponent's data too,
-#-----------------(not yet--->)logical switch if data will be tagged with team/season
+#-----------------[[[enseguido!!!!]](not yet--->)logical switch if data will be tagged with team/season
 #-----------both scrape, clean, and format data as a data frame.
 #---------------------------------
 #---------------v0.11+ needs:
+#-----------[[[ENSEGUIDO!!]] check arguments
 #-----------improve tagging -- season, age, time, day of week, natTV, etc. 
 #-----------better specify data types for each variable, order factors
 #-----------create a menu to select which data table to extract:  gamelogs, playoff logs, advanced stats, etc
