@@ -1,9 +1,0 @@
-##############################################
-########stuff to look at....
-##############################################
-
-for bx.season,
-	bx.season("LAL",2013)
-	bx.season("GSW",2014)
-...both have some "team.total[N-1]>0 is not true/false" error.
-...I'm thinking there's an "NaN" or "NA" issue when summing +/- in those seasons.  WHY?  WHERE?
