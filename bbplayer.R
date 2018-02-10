@@ -1,18 +1,12 @@
-#######################################################
-########################################################
-################scrape box score data FOR A PLAYER
-################v0.1
-################2 February 2018
-########################################################
-#######get some box score data -- need it for GLM/NN!!
-########################################################
-###now written as a function
+#######################################################################
+#########   SCRAPE BASKETBALL-REFERENCE.COM for player gamelogs
+#######################################################################
 
 #######packages needed
 require(rvest)
 
 #########create function -- give me a box score link, I'll get team data
-bx.player<-function(
+bbplayer<-function(
 	##################player to get data for
 		player="Russell Westbrook",
 	##################season to get data for

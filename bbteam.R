@@ -1,17 +1,16 @@
-###################################################################
-###################################################################
-#############pull a list of box scores from an entire season
-###################################################################
-###################################################################
+##########################################################################################
+#######Scrape basketball-reference.com for team gamelogs for a given season(s) 
+##########################################################################################
+
 
 ###Package for scraping tables
 	require(rvest)
 ###Load variable of team abbreviations and names (later.... seasons, too!!!)
-	load("teams.R")
+	load("teams.RData")
 
 
 ######create a function to get a team's bxdata for a whole season
-bx.season<-function(
+bbteam<-function(
 		###########team to get data from
 			team="LAL",
 		###########season to get data from
