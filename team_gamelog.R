@@ -11,9 +11,9 @@
 team_gamelog<-function(
     ######REWRITE WITH SUBROUTINE!!!
 		###########team to get data from
-		###	team="LAL",
+		  team="LAL",
 		###########season(s) to get data from
-			season=2010,
+			season=year,
 		###########include opponents stats, too?
 			opp=F
 		)
@@ -55,7 +55,7 @@ output<-NULL
   #############download gamelog data###############
 	
 	#####specific path for current season
-		gamelog<-file.path(link.root,team,i,"gamelog")
+		gamelog<-file.path(link.root,team,season,"gamelog")
 	#####read page w.gamelog
 		gamelog<-read_html(gamelog)
 	#####find tables in webpage
