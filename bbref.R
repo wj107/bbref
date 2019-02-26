@@ -46,10 +46,7 @@ bbref<-function(
   if(dat.type==1) {
     #---load the team_gamelog subroutine
     source("team_gamelog.R")
-    #---extract gamelog data for the given year
-    #------NEED MENU FOR TEAM!!
-    #------OPTION FOR OPPONENT'S DATA!!!
-    team_gamelog("LAL",year,F)->output
+    team_gamelog(year,F)->output
   }
   
   #---if player gamelogs...

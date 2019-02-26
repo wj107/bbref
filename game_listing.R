@@ -10,7 +10,8 @@ game.listing<-function(
   #---what team to get games from?  internal call; so no warnings    
   team
 ){
-  
+  #---link root
+  link.root<-"https://www.basketball-reference.com"
   
   #---tweak team[,3] to get team url to gamelog webpage
   team.url<-substr(team[,3],1,nchar(team[,3])-5)

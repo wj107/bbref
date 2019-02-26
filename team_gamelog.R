@@ -4,53 +4,50 @@
 
 ######create a function to get a team's bxdata for a whole season
 team_gamelog<-function(
-    ######REWRITE WITH SUBROUTINE!!!
-		###########team to get data from
-		  team="LAL",
-		###########season(s) to get data from
-			season=year,
-		###########include opponents stats, too?
+    #---what season to get data from?   year from bbref.  internal call; so no warnings
+    year,
+		
+    
+    ####_v2.0!!!
+    ###########include opponents stats, too?
 			opp=F
 		)
 	{
-########check arguments
-###is team valid?
-	#if(!(team %in% teams$abbr)) stop("Argument 'team' must be a valid abbreviation for an NBA team")
-###is season valid?
-	#if(!(season %in% 2000:2018)) stop("Argument 'season' must be between 2000 and 2018")
-###is opp logical
-	if(!is.logical(opp)) stop("Argument 'opp' must be logical")
 
-###do I need 'teams' anymore, at all??
-
-####full team
-##	team.full<-teams$full[match(team,teams$abbr)]
-
+  
+######################################################################
+  #---subroutine: get listing of all NBA teams in season
+  source("team_listing.R")
+  team.listing(year)->team.list
+  #---note: team.list is DF with columns teams, abbr, team.links
+  
+#####################################################  
+#---menu: what team to get gamelog data for?
+  menu(
+    #---choices: all team names from given season
+    team.list[,1],
+    #---title
+    title=paste0("Select gamelog data from a game from the ",year," season from which team?")
+  )->team.row
+  #---save my team, abbreviation, and html link  
+  my.team<-team.list[team.row,]
+  
+  
 ##################################################
 ####obtain & clean schedule for the given season
 ##################################################
 
 ####path for box scores
-	link.root<-"https://www.basketball-reference.com/teams"
-
-####initialize output
-output<-NULL
+	link.root<-"https://www.basketball-reference.com"
 
 
-
-###########################
-###NEED TO DEFINE 'team' 
-####VIA SUBROUTINE, first.
-############################
-
-##no looping!!
-#####loop across seasons
-##for (i in season){
+  #---tweak my.team[3] to get team url to gamelog webpage
+  team.url<-substr(my.team[3],1,nchar(my.team[3])-5)
 	
   #############download gamelog data###############
 	
 	#####specific path for current season
-		gamelog<-file.path(link.root,team,season,"gamelog")
+		gamelog<-file.path(link.root,team.url,"gamelog")
 	#####read page w.gamelog
 		gamelog<-read_html(gamelog)
 	#####find tables in webpage
@@ -85,7 +82,9 @@ output<-NULL
 	####format factors
 		###future: order factors!!
 		for (i in c(3,5)) gamelog[,i]<-as.factor(gamelog[,i])
-
+		
+		
+		##--v2.0
 	###############if opp, prepare opponent's data##################
 	if(opp) {
 		###designate opponent's stats
@@ -93,16 +92,8 @@ output<-NULL
 		###cbind with gamelog data
 			gamelog<-cbind(gamelog,opp.gamelog)
 		}
-				
-####rbind season data to output
-	output<-rbind(output,gamelog)
-	
-	#no looping
-	###finish 'season' loop
-	#}
-
-
+			
 #####output!!!
-	output
+	gamelog
 }
 
