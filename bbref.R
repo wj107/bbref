@@ -17,12 +17,32 @@ bbref<-function(
   if((year>as.numeric(format(Sys.time(),"%Y"))) | (year<1950)) stop("Argument 'year' must be a year between 1950 and the current year")
   
   ####################################
+  #---some requireds
+  #---rvest package for digging into html
+  require(rvest)
+  #---root link!! data source!!
+  link.root<-"https://www.basketball-reference.com"
+
+  
+  ####################################
   #---Identify desired data to extract
   
-  #---menu: team gamelogs, or game play-by-play??
-  menu(c("Team gamelogs for the season", "Play-by-play data for a selected game"),title="What type of data would you like to extract?")->dat.type
+  #---menu: what data to extract??
+  menu(
+    #---menu choices
+    c(paste0("Team gamelogs for the ",year," season"),
+      paste0("Player gamelogs for the ", year," season"), 
+      paste0("Play-by-play data for a selected game during the ",year," season"),
+      paste0("Shot charts for a selected game during the ",year," season")),
+    #---chart title
+    title="What type of data would you like to extract?"
+    #---menu output = dat.type identifier
+    )->dat.type
   
-  #---if gamelogs...
+  #---if no selection, end program
+  if(dat.type==0) stop("No selection made, program ended.")
+  
+  #---if team gamelogs...
   if(dat.type==1) {
     #---load the team_gamelog subroutine
     source("team_gamelog.R")
@@ -32,14 +52,25 @@ bbref<-function(
     team_gamelog("LAL",year,F)->output
   }
   
-  #---if play-by-play data...
+  #---if player gamelogs...
   if(dat.type==2) {
+    #---load the team_gamelog subroutine
+    stop("player gamelogs coming soon")
+  }
+  
+  #---if play-by-play data...
+  if(dat.type==3) {
     #---load the play-by-play subroutine
     source("game_pbp.R")
     #---extract play-by-play data for a given team on a given date
     game_pbp(year)->output
   }
   
+  #---if shot chart data...
+  if(dat.type==4) {
+    #---load the team_gamelog subroutine
+    stop("shot chart data coming soon")
+  }
   
 #---OUTPUT!!
 output

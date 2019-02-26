@@ -2,15 +2,13 @@
 #########   Get play-by-play gamelogs from BASKETBALL-REFERENCE.COM 
 #######################################################################
 
-#######packages needed
-require(rvest)
 
 #########for a given game, I'll get play-by-play data
 game_pbp<-function(
-	#---season to get play-by-play logs for
-		season=format(Sys.Date(),"%Y"),
+	#---season to get play-by-play logs for, from 'year' argument to bbref
+		year=year
 	#---dates to get play-by-play logs for
-	  date=NULL
+	#  date=NULL
 	
 	
 ##----for v2.0!!!
@@ -22,16 +20,14 @@ game_pbp<-function(
 {
   
 #######################################
-#------check arguments
+#------check arguments...
+#------not needed, internal call
   
 ###if(!is.null(date)) {subroutine to extract games by date, first.}  
 
-#---test season is 2001 or later
-  if(is.na(as.numeric(season)) | as.numeric(season)<2001) stop("Season must be a year, in YYYY format, from 2001 or later.")
 
-#---root link!! data source!!
-  link.root<-"https://www.basketball-reference.com"
-  
+  #---test season is 2001 or later
+  if(is.na(as.numeric(season)) | as.numeric(season)<2001) stop("Season must be a year, in YYYY format, from 2001 or later.")
 ######################################################################
 #---subroutine: get listing of all NBA teams in season
   source("team_listing.R")
