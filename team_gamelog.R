@@ -2,11 +2,6 @@
 #----Get team gamelogs as data frame for a given season
 ##############################################################
 
-
-###Package for scraping tables
-	require(rvest)
-
-
 ######create a function to get a team's bxdata for a whole season
 team_gamelog<-function(
     ######REWRITE WITH SUBROUTINE!!!

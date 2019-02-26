@@ -3,11 +3,17 @@
 ########################################################################################
 
 team.listing<-function(
-  #---what season to get data from?  internal call; so no warnings
-  season=NULL
+  #---what season to get data from?   year from bbref.  internal call; so no warnings
+  year
+  
+  
+  #---v2.0!!
+  #---customize message based on which data is being extracted
+  #message = ??
+
 ){
   #---all NBA teams from given season
-  season.link<-paste0("https://www.basketball-reference.com/leagues/NBA_",season,".html")
+  season.link<-paste0("https://www.basketball-reference.com/leagues/NBA_",year,".html")
   
   #---get html links to all NBA teams for the given season
   team.html<-read_html(season.link)

@@ -7,22 +7,16 @@
 
 
 game.listing<-function(
-  ###is this needed???
-  #---what season to get games from?  internal call; so no warnings
-  ##season=NULL,
-  
   #---what team to get games from?  internal call; so no warnings    
-  team=NULL
+  team
 ){
-  #---our data source!
-  link.root<-"https://www.basketball-reference.com/"
+  
   
   #---tweak team[,3] to get team url to gamelog webpage
   team.url<-substr(team[,3],1,nchar(team[,3])-5)
   
   #---url to access all games for an NBA team from given season
   gamelog.link<-file.path(link.root,team.url,"gamelog")
-  
   
   #---get table data for games for the given season
   gamelog.html<-read_html(gamelog.link)
@@ -48,15 +42,28 @@ game.listing<-function(
   #---what rows do not have data?   delete ones w/out data
   which(is.na(as.numeric(game.list[,1])))->del.rows
   game.list<-game.list[-del.rows,]
+  #---indicate home games with "vs"
+  game.list[game.list[,3]=="",3]<-"vs"
+  #---make 'pretty.scores'
+  pretty.scores<-sapply(1:nrow(game.list), function(x) paste0(game.list[x,6:7],collapse="-"))
+  #---create menu.text
+  menu.text<-sapply(1:nrow(game.list), function(x) paste0(c(game.list[x,2:5],pretty.scores[x]),collapse=" "))
+  
+  ################################
+  #----further clean game data
   #---scores are numeric!!
   game.list[,6:7]<-lapply(game.list[,6:7],as.numeric)
   #---delete rownames
   rownames(game.list)<-NULL
+
   
 ###############################################
 #----HA and WL are factors...
   game.list[,3]<-factor(game.list[,3],labels=c("H","A"))
   game.list[,5]<-factor(game.list[,5],labels=c("L","W"))
+  
+###################################################################
+#----put all stats into character vector for menu display
   
 ################################################
 #---get links to specific game data
@@ -72,6 +79,6 @@ game.listing<-function(
   
 ###############################################################
 #----put it together: game list + links to bx, pbp, shots
-  game.list<-data.frame(game.list,boxscores,play.by.play,shot.chart,stringsAsFactors = F)
+  game.list<-data.frame(game.list,menu.text,boxscores,play.by.play,shot.chart,stringsAsFactors = F)
   game.list}
 

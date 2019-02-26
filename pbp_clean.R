@@ -9,15 +9,11 @@ pbp_clean<-function(
   my.game=NULL
   ){
 
-#---root link!! data source!!
-  link.root<-"https://www.basketball-reference.com"
-#--need rvest,first!!
-  require(rvest)
-
+link.root<-"https://www.basketball-reference.com"
 ################################################################################  
 #---get html table w/play-by-play data from gamelink, convert to data frame
   #---create link to pbp data for my.game
-  gamelink<-file.path(link.root,my.game[,9])
+  gamelink<-file.path(link.root,my.game[,10])
   #--get html table w/play-by-play data
   read_html(gamelink)->play.by.play.html
   html_table(html_nodes(play.by.play.html,"table"))->play.by.play.html
