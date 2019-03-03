@@ -66,7 +66,8 @@ bbref<-function(
   #---if shot chart data...
   if(dat.type==4) {
     #---load the team_gamelog subroutine
-    stop("shot chart data coming soon")
+    source("game_sc.R")
+    game_sc(year)->output
   }
   
 #---OUTPUT!!

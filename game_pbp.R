@@ -46,8 +46,11 @@ game_pbp<-function(
   
 #####################################################  
 #---menu: what games to get play-by-play data for?
-  menu(game.list[,8],
-       title=paste0("What game from the ",year," ",team.list[team.row,1]," do you want play-by-play data for?"))->game.row
+  menu(
+    #---choices: game listing for given season
+    game.list[,8],
+    #---title
+    title=paste0("What game from the ",year," ",team.list[team.row,1]," do you want play-by-play data for?"))->game.row
   #---save game data & links
   my.game<-game.list[game.row,]
 

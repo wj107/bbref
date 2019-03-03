@@ -27,7 +27,7 @@ team_gamelog<-function(
     #---choices: all team names from given season
     team.list[,1],
     #---title
-    title=paste0("Select gamelog data from a game from the ",year," season from which team?")
+    title=paste0("Select gamelog data from the ",year," season for which team?")
   )->team.row
   #---save my team, abbreviation, and html link  
   my.team<-team.list[team.row,]

@@ -26,7 +26,7 @@ sc_clean<-function(
 ################################################################################  
 #---get html table w/shot chart data from gamelink, convert to data frame
   #---create link to shot chart data for my.game
-  gamelink<-file.path(link.root,my.game[,10])
+  gamelink<-file.path(link.root,my.game[,11])
   #--get html table w/shot chart data
   read_html(gamelink)->shot.chart.html
   
