@@ -1,109 +1,117 @@
 #######################################################################
-#########   SCRAPE BASKETBALL-REFERENCE.COM for player gamelogs
+#########   Get gamelogsa for player gamelogs in a given season
 #######################################################################
 
 #######packages needed
 require(rvest)
 
-#########give me a player name, I'll get game-by-game bx data
+#########give me a player name, I'll get game-by-game bx gamelogsa
 player_gamelog<-function(
-  #########Is this the best menu option?
-  ###maybe, consistent w/other methods, select season first.
-  ###then team, then player.
+  #----internal call, no warnings.
+  year,
   
-  
-	##################player to get data for
-		player="Russell Westbrook",
-	##################season to get data for
-		season=2017,
+	##################player to get gamelogsa for
+		#player="Russell Westbrook",
+	##################season to get gamelogsa for
+		#season=2017,
 	###############add column w.player name??
-		id=FALSE,
+    id.player=FALSE,
 	##############add column w. season?
-		year=FALSE
+		id.year=FALSE
 		)
 	{
 
+######################################################################
+  #---subroutine: get listing of all NBA teams in season
+  source("team_listing.R")
+  team.listing(year)->team.list
+  #---note: team.list is DF with columns teams, abbr, team.links
+  
+  #####################################################  
+  #---menu: what team does the player play for?
+  menu(
+    #---choices: all team names from given season
+    team.list[,1],
+    #---title
+    title=paste0("Select a player from which team during the ",year," season?")
+  )->team.row
+  #---save my team, abbreviation, and html link  
+  my.team<-team.list[team.row,]
+  
+  
+  ###########################################################################
+  #---subroutine:  get a listing of all games my team played in my season
+  source("player_listing.R")
+  player.listing(team=my.team)->player.list
+  #---player.list is DF: col 1-6: player data, 7: menu.text, 8: player html, 9: player gamelog html
+  
+
+  #####################################################  
+  #---menu: what player to get gamelogs for?
+  menu(
+    #---choices: game listing for given season
+    player.list[,7],
+    #---title
+    title=paste0("What player from the ",year," ",team.list[team.row,1]," do you want gamelog data for?"))->player.row
+  #---save game gamelogsa & links
+  my.player<-player.list[player.row,]  
+  
+  
 #######principle path!
-	link.root<-"https://www.basketball-reference.com/players/"
-###player name in basketball-reference.com
-	player.first<-unlist(strsplit(player," "))[1]
-	player.last<-trimws(sub(player.first,"",player))
-####parts of the name
-	player.first.2<-tolower(substr(player.first,1,2))
-	player.last.5<-tolower(substr(player.last,1,5))
-	first.letter<-tolower(substr(player,1,1))
-	
-#######check argument
-	#if(link==NULL) stop("Argument 'link' requires a valid path")
-	#if(team==NULL) stop("Argument 'team' requires a team abbreviation")
-###initialize output
-	#bxdat<-NULL
+	link.root<-"https://www.basketball-reference.com/"
 
-#####initialize dat
-dat<-NULL
-
-#####loop through seasons
-for (i in season){
-#####read webpage with game data
-	game.page<-file.path(link.root,first.letter,paste0(player.last.5,player.first.2,"01"),"gamelog",i)
-	game.page<-read_html(game.page)
-#####identify tables in webpage
-	table.nodes<-html_nodes(game.page,"table")
-####find nodes for desired table
-	game.table<-table.nodes[grep("Regular Season Table",table.nodes)]
+#####read webpage with game gamelogsa
+	gamelog.url<-file.path(link.root,my.player[,9],year)
+	gamelog.html<-read_html(gamelog.url)
+#####identify tables in webpage, select regular season gamelogsa
+	gamelog.html<-html_nodes(gamelog.html,"table")
+	gamelog.html<-gamelog.html[grep("Regular Season Table",gamelog.html)]
 ####convert html table to data frame
-	game.table<-as.data.frame(html_table(game.table))
-####add year if year=T
-	if(year) {YR<-rep(i,nrow(game.table))
-		game.table<-cbind(YR,game.table)
-		}
+	gamelogs<-as.data.frame(html_table(gamelog.html,fill=T))
 
-	dat<-rbind(dat,game.table)
-	}
+
 ####clean up labels/DNPs
 	###find labels/DNPs
-		labs<-sapply(1:nrow(dat), function(x) all(is.na(as.numeric(dat[x,10:ncol(dat)]))) )
+		labs<-sapply(1:nrow(gamelogs), function(x) all(is.na(as.numeric(gamelogs[x,10:ncol(gamelogs)]))) )
 	####eliminate labels/DNPs
-		dat<-dat[!labs,]
-
+		gamelogs<-gamelogs[!labs,]
+		
 #####clean up data!!
 	######change "@" to "H" or "A"
-	HA<-6
-	if(year) HA<-HA+1
-		dat[dat[,HA]=="",HA]<-"H"
-		dat[dat[,HA]=="@",HA]<-"A"
+		gamelogs[gamelogs[,6]=="",6]<-"H"
+		gamelogs[gamelogs[,6]=="@",6]<-"A"
 	######find W/L, margin
-	wl<-8
-	if(year) wl<-wl+1	
-		substr(dat[,wl],1,1)->WL
+		substr(gamelogs[,8],1,1)->WL
 		###do the margin, later!!!
-		dat[,wl]<-WL
+		gamelogs[,8]<-WL
 
 	#########numeric columns, factor columns
 		numeric.columns<-c(1,2,11:30)
 		factor.columns<-c(5,6,8,9)
 		
-		###adjust if year=T
-			if(year) {numeric.columns<-numeric.columns+1
-				 factor.columns<-c(1,factor.columns+1)}
-
 		###later-- order factors??	
 	####coerce numeric/factor columns
-		for (i in numeric.columns) as.numeric(dat[,i])->dat[,i]
-		for (i in factor.columns) as.factor(dat[,i])->dat[,i]
+		for (i in numeric.columns) as.numeric(gamelogs[,i])->gamelogs[,i]
+		for (i in factor.columns) as.factor(gamelogs[,i])->gamelogs[,i]
 
 	#########names for data frame
-		dat.names<-c("G","GP","Date","Age","Team","HA","Opp","WL","GS","MP","FG","FGA","FGp","tP","tPA","tPp","FT","FTA","FTp",
+		gamelogs.names<-c("G","GP","date","Age","Team","HA","Opp","WL","GS","MP","FG","FGA","FGp","tP","tPA","tPp","FT","FTA","FTp",
 			"ORB","DRB","TRB","AST","STL","BLK","TOV","PF","PTS","GmSC","PM")
-		###if year=T, add "YR"
-			if(year) dat.names<-c("YR",dat.names)
-
-		names(dat)<-dat.names
-	#####add IF column if id=T
-		if(id) {
-			WHO<-rep(player.last,nrow(dat))
-			dat<-cbind(WHO,dat)
-			}
-
 	
-dat}
+
+		names(gamelogs)<-gamelogs.names
+		#####add YR column if id.year=T
+		if(id.year) {
+		  YR<-rep(year,nrow(gamelogs))
+		  gamelogs<-cbind(YR,gamelogs)
+		}
+		#####add WHO column if id.player=T
+		if(id.player) {
+		  WHO<-rep(my.player[,2],nrow(gamelogs))
+		  gamelogs<-cbind(WHO,gamelogs)
+		}
+	
+		#---WTF last column??
+	  if(all(is.na(gamelogs[,ncol(gamelogs)]))) gamelogs<-gamelogs[,-ncol(gamelogs)]
+		
+gamelogs}

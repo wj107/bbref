@@ -45,7 +45,7 @@ game_pbp<-function(
   #---game.list is DF: col 1-7: game data, 8: menu.text, 9: boxscores html, 10: play-by-play html, 11: shot chart html
   
 #####################################################  
-#---menu: what games to get play-by-play data for?
+#---menu: what game to get play-by-play data for?
   menu(
     #---choices: game listing for given season
     game.list[,8],

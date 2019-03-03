@@ -51,8 +51,9 @@ bbref<-function(
   
   #---if player gamelogs...
   if(dat.type==2) {
-    #---load the team_gamelog subroutine
-    stop("player gamelogs coming soon")
+    #---load the player_gamelog subroutine
+    source("player_gamelog.R")
+    player_gamelog(year,F,F)->output
   }
   
   #---if play-by-play data...
