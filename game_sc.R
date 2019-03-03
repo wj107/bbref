@@ -65,6 +65,7 @@ game_sc<-function(
   #---save game data & links
   my.game<-game.list[game.row,]
 
+  
 #########################################################
 #----subroutine: extract play-by-play table
 	source("sc_clean.R")
