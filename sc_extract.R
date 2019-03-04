@@ -38,7 +38,19 @@ sc_extract<-function(
   
   who<-sapply(1:N,function(x) unlist(strsplit(who[x]," from "))[1])
   
+  #---identify make/miss, 2/3 ptr
+  type1<-rep("Miss",length(who))
+  type1[grep(" made ",who)]<-"Make"
+  
+  type2<-rep(2,length(who))
+  type2[grep("3-pointer",who)]<-3
+  
+  #---isolate name of shooter
+  who<-sapply(1:N,function(x) unlist(strsplit(who[x]," m[a-z]+ [0-9]-pointer"))[1])
+  
+  #---isolate only name
+  
   #---assemble it all into a data frame
-  output<-data.frame(top, left,qtr,time,who,dist,stringsAsFactors = F)
+  output<-data.frame(top, left,qtr,time,who,type1,type2,dist,stringsAsFactors = F)
   
   output}
